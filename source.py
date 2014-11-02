@@ -12,7 +12,7 @@ class Source_Base :
     def __init__( self ) :
         self.rate = 0
 
-    def connect( self, subscriber, buffersRate ) :
+    def connect( self, subscriber, bufferRate ) :
         self.subscriber = subscriber
         self.bufferRate = bufferRate
 

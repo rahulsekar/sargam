@@ -13,6 +13,7 @@ class Processor :
 
     def update( self ) :
 
+        self.inProgress = True
         self.debug      = self.config[ 'debug' ]
         self.plot       = self.config[ 'plot' ]
         self.times      = []
@@ -60,7 +61,6 @@ class Processor :
             else :
                 raise NameError( 'unknown message key: %s' % key )
         
-        self.inProgress = True
         self.config.update( args )
         self.update()
         
