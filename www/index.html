@@ -1,0 +1,43 @@
+<html>
+  <style>
+    h1, h2 {display: inline-block;}
+  </style>
+
+  <title>Virtual Music Academy</title>
+  <body>
+    <h1>Welcome to Virtual Music Academy</h1><br>
+    <h2 id="message">Practice makes perfect!</h2><br>
+    <h2 id="res">-</h2><br>
+    <h2>Lesson:  </h2><h2 id="lesson">N/A</h2><br>
+    <h2>Score:  </h2><h2 id="score">N/A</h2><br>
+    
+    <button onclick="toggleRecord()" id="start">Start</button>
+    <form id="settings">
+      <br><br>
+      Carnatic tonic<br>
+      <input type="radio" name="carnatic_tonic" value="" checked>None
+      <input type="radio" name="carnatic_tonic" value="C">C (1)    
+      <input type="radio" name="carnatic_tonic" value="C#">C# (1.5)    
+      <input type="radio" name="carnatic_tonic" value="D">D (2)    
+      <input type="radio" name="carnatic_tonic" value="D#">D# (2.5)
+      <input type="radio" name="carnatic_tonic" value="E">E (3)
+      <input type="radio" name="carnatic_tonic" value="F">F (4)
+      <input type="radio" name="carnatic_tonic" value="F#">F# (4.5)    
+      <input type="radio" name="carnatic_tonic" value="G">G (5)    
+      <input type="radio" name="carnatic_tonic" value="G#">G# (5.5)
+      <input type="radio" name="carnatic_tonic" value="A">A (6)
+      <input type="radio" name="carnatic_tonic" value="A#">A# (6.7)
+      <input type="radio" name="carnatic_tonic" value="B">B (7)
+      <br><br>
+      Lesson<br>
+      <input type="radio" name="lesson" value="" checked>None
+      <input type="radio" name="lesson" value="sarali1">sarali1
+      <input type="radio" name="lesson" value="sarali2">sarali2
+      <input type="radio" name="lesson" value="sarali3">sarali3
+      <br><br>
+      <input type="checkbox" name="Evaluate" value="Evaluate">Evaluate<br>
+      <br><h2 id="score"></h2>
+    </form>
+  </body>
+  <script src=sargam.js></script>
+</html>
