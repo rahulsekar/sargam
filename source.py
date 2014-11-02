@@ -1,7 +1,7 @@
 import sys
 from scipy.io import wavfile
 import numpy as np
-import pyaudio
+#import pyaudio
 import time
 import math
 
