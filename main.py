@@ -1,3 +1,4 @@
+import os
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
@@ -39,6 +40,6 @@ app = tornado.web.Application( [
 ] )
 
 http_server = tornado.httpserver.HTTPServer( app )
-http_server.listen( 8888 )
+http_server.listen( int( os.environ.get( 'PORT', 8888 ) ) )
 print( 'http server started' )
 tornado.ioloop.IOLoop.instance().start()
