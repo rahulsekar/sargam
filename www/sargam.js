@@ -1,7 +1,11 @@
 var base_url    = window.location.href.split( '/' )[2];
 var isRecording = false;
 var ws          = null;
+
 var bufferSize  = 4096;
+var downSample  = 2;
+var int16Buffer  = new Int16Array( bufferSize / downSample );
+
 var userMediaConfig =
     { "audio":
       { "mandatory":
@@ -88,7 +92,16 @@ ws.onopen    = function(){};
 ws.onmessage = onWsMessage;
 
 function onAudioProcess( e )
-{ if( isRecording ) ws.send( e.inputBuffer.getChannelData( 0 ) ); }
+{
+    if( isRecording )
+    {
+	var data = e.inputBuffer.getChannelData( 0 );
+	var i = 0;
+	for( var idx = 0; idx < data.length; idx += downSample )
+	    int16Buffer[ i++ ] = data[ idx ] * 0xFFFF
+	ws.send( int16Buffer );
+    }
+}
 
 function callback( stream )
 {
@@ -109,7 +122,7 @@ navigator.getUserMedia( userMediaConfig, callback, error);
 
 function startRecord()
 {
-    var message  = 'rate=' + String( context.sampleRate );
+    var message  = 'rate=' + String( context.sampleRate / downSample );
     var elements = document.getElementById( "settings" ).elements;
     
     for( var i = 0 ; i < elements.length; ++i )
