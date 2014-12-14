@@ -9,7 +9,8 @@ import processor
 import destination
 
 args = factory.get_cmd_args()
-src  = factory.get_source( args['mode'], args['infile'], args['rate'] )
+src  = factory.get_source(
+    args[ 'mode' ], args[ 'infile' ], args[ 'micrate' ] )
 prsr = processor.Processor()
 br   = 2 * args['freq_base']
 

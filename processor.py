@@ -23,9 +23,18 @@ class Processor :
             self.config[ 'evaluate' ],
             self.config[ 'carnatic_tonic' ] )
 
-        self.windowSize    = self.config[ 'rate' ] / self.config[ 'freq_base' ]
-        self.windowSizeBy2 = int( self.windowSize / 2.0 ) + 1
-        self.buffer        = np.array( [], dtype = np.int16 )
+        if 'rate' in self.config :
+            self.windowSize    = self.config[ 'rate' ] / self.config[ 'freq_base' ]
+            self.windowSizeBy2 = int( self.windowSize / 2.0 ) + 1
+
+        if self.config[ 'dtype' ] == 'int16' :
+            self.dtype = np.int16
+        elif self.config[ 'dtype' ] == 'float32' :
+            self.dtype = np.float32
+        else :
+            raise NameError( 'unknown dtype: %s' % self.config[ 'dtype' ] )
+
+        self.buffer = np.array( [], dtype = self.dtype )
 
         self.dbgScbr = destination.File()
         self.pltScbr = destination.Plot()
@@ -54,7 +63,7 @@ class Processor :
 
             if key in [ 'debug', 'plot', 'evaluate', 'chords' ] :
                 args[ key ] = True
-            elif 'lesson' == key or 'carnatic_tonic' == key:
+            elif key in [ 'lesson', 'carnatic_tonic', 'dtype' ] : 
                 args[ key ] = value # TODO: check value!
             elif 'rate' == key :
                 args[ key ] = int( value )
@@ -66,12 +75,16 @@ class Processor :
         
         self.subscriber.write_message( self.controller.initialize() )
 
-        
     def consume_audio( self, data, t ) :
+        self.consume_audio_np_array(
+            np.frombuffer( data, dtype = self.dtype ), t )
+
+    def consume_audio_np_array( self, data, t ) :
 
         self.times.append( t )
 
         self.buffer = np.append( self.buffer, data )
+
         if len( self.buffer ) >= self.windowSize :
             ( RES, pcs, val ) = self.finder.find(
                 self.buffer[ - self.windowSize :  ],
@@ -84,7 +97,10 @@ class Processor :
             self.buffer = self.buffer[ - self.windowSizeBy2  : ]
             
             if self.debug :
-                self.dbgScbr.write_message( np.array_str( np.transpose( pcs ), precision = 1 ) )
+                self.dbgScbr.write_message( '\n'
+                    + np.array_str( np.transpose( pcs ), precision = 1 )
+                    + '\n' )
+
             if self.plot :
                 self.pltScbr.write_message( pcs, t )
 

@@ -18,9 +18,12 @@ def get_cmd_args() :
                          type = str,
                          choices = [ 'mic', 'file', 'web' ] )
 
-    parser.add_argument( '--rate',
+    parser.add_argument( '--micrate',
                          help = 'Rate to sample mic if mode is mic',
-                         default = '20050', type = int )
+                         default = '22050', type = int )
+    parser.add_argument( '--dtype',
+                         help = 'dtype for sampling. int16 or float32',
+                         default = 'int16', type = str )
 
     #input from wav file
     parser.add_argument( '--infile', help = 'File to process',
@@ -64,7 +67,7 @@ def get_cmd_args() :
 
 def get_finder( args ) :
 
-    if args['chords'] :
+    if args[ 'chords' ] :
         ret = finder.Chord( pitch_start  = args['pitch_start'],
                             freq_base    = args['freq_base'],
                             amp_lb       = args['amp_lb'],
@@ -81,10 +84,10 @@ def get_finder( args ) :
                            carnatic_tonic = args['carnatic_tonic'] )
     return ret
     
-def get_source( mode, infile, rate ) :
+def get_source( mode, infile, micrate ) :
     
     if 'mic' == mode :
-        ret = source.Mic( rate )
+        ret = source.Mic( micrate )
 
     elif 'file' == mode :
         ret = source.Wavfile( infile )
