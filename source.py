@@ -72,7 +72,7 @@ class Mic( SourceBase ) :
             rate     = self.micrate,
             input    = True,
             stream_callback   = self.callback_mic,
-            frames_per_buffer = self.micrate / self.bufferRate )
+            frames_per_buffer = int( self.micrate / self.bufferRate ) )
 
         self.subscriber.process_message(
             'dtype=int16,rate=%d' % self.micrate )

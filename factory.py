@@ -80,8 +80,8 @@ def get_finder( args ) :
                            amp_lb         = args['amp_lb'],
                            oct_wt_ratio   = args['oct_wt_ratio'],
                            n_octaves      = args['n_octaves'],
-                           use_fft        = args['use_fft'],
-                           carnatic_tonic = args['carnatic_tonic'] )
+                           use_fft        = args['use_fft'] )
+                           
     return ret
     
 def get_source( mode, infile, micrate ) :
@@ -100,16 +100,14 @@ def get_source( mode, infile, micrate ) :
 
     return ret
 
-def get_controller( lesson, evaluate, carnatic_tonic ) :
+def get_controller( lesson, carnatic_tonic, evaluate ) :
 
     if lesson == '' :
         if evaluate :
             raise NameError( 'No --lesson to evaluate on.' )
-        ret = controller.Freestyle()
-    elif evaluate :
-        ret = controller.Evaluate( lesson, carnatic_tonic )
+        ret = controller.Controller( '', carnatic_tonic, False )
     else :
-        ret = controller.Learn( lesson, carnatic_tonic )
-
+        ret = controller.Controller( lesson, carnatic_tonic, evaluate )
+        
     return ret
 

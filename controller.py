@@ -5,95 +5,55 @@ import numpy as np
 #locals
 import lessons
 import plotter
+import sound
 
-class Controller_Base :
+class Controller :
     
-    def process_tone( self, res, pcs, val ) :
-        raise NameError( 'process_tone not implemented' )
-
-    def done( self ) :
-        return '\n'
-        
-    def initialize( self ) :
-        return ''
-
-class Freestyle( Controller_Base ) :
-
-    def initialize( self ) :
-        return ','.join( [ 'r=-',
-                           'm=Practice makes perfect!',
-                           'l=N/A',
-                           's=N/A'] )
-    def process_tone( self, res, pcs, val ) :
-        return 'r=%s' % res
-
-class Learn( Controller_Base ) :
-    
-    def __init__( self, lesson_name, carnatic_tonic ) :
-
-        self.name    = lesson_name
-        self.content = lessons.get_lessons()[ lesson_name ]
-        self.idx     = -1 #not in progress
-        if '' == carnatic_tonic :
-            raise NameError( 'Lesson %s needs carnatic_tonic' % lesson_name )
-
     def initialize( self ) :
         
-        self.idx = 0
-        return( ','.join( [ 'r=-',
-                            'l=%s' % self.content,
-                            'n=0',
-                            'm=%s' % self.name,
-                            's=N/A' ] ) )
+        self.carnatic_map = dict()
 
-    def process_tone( self, res, pcs, val ) :
-        
-        if self.idx >= 0 and res == self.content[ self.idx ] :
+        if self.carnatic_tonic != '' :
+            notes = sound.notes()
+            idx   = notes.index( self.carnatic_tonic )
+            if idx > 0 and idx < len( notes ):
+                notes = notes[ idx : ] + notes[ 0 : idx ]
+            self.carnatic_map = dict( zip( notes, sound.swaras() ) )
+            self.carnatic_map[ '-' ] = '-';
             
-            self.idx += 1
-            if self.idx == len( self.content ) :
-                return self.done()
-            else :
-                return ','.join( [ 'r=%s' % res, 'n=%d' % self.idx ] );
-
-        return 'r=%s' % res
-
-    def done( self ) :
-
-        if self.idx == len( self.content ) :
-            m = 'Lesson complete!'
+        if self.lesson_name in lessons.get_lessons() :
+            self.lesson = lessons.get_lessons()[ self.lesson_name ]
         else :
-            m = 'Lesson stopped.'
-
-        ret = ( ','.join( [ 'd', 'm=%s' % m,
-                            'n=%s' % self.idx ] ) )
-
-        self.idx = -1
-        
-        return ret
-
+            self.lesson = 'N/A'
             
-class Evaluate( Controller_Base ) :
-    
-    def __init__( self, lesson_name, carnatic_tonic ) :
-        
-        self.name    = lesson_name
-        self.content = lessons.get_lessons()[ lesson_name ]
-        if carnatic_tonic == '' :
-            raise NameError( 'Lesson %s needs carnatic_tonic.' % lesson_name )
+        if '' == self.carnatic_tonic and self.lesson != 'N/A' :
+            raise NameError( 'Lesson %s needs carnatic_tonic' % lesson_name )
+        return ','.join( [ 'l=%s' % self.lesson, 'e' ] )
 
-    def initialize( self ) :
-        return ','.join( [ 'r=-',
-                           'm=Evaluation',
-                           'l=%s' % self.content,
-                           's=N/A' ] )
-    def process_tone( self, res, pcs, val ) :
+    def __init__( self, lesson_name, carnatic_tonic, evaluate ) :
         
-        self.res += res
-        return ','.join( [ 'r=%s' % res ] )
+        self.carnatic_tonic = carnatic_tonic
+        self.evaluate       = evaluate
+        self.lesson_name    = lesson_name
+        self.res            = ''
 
+    def process_tone( self, res, pcs, val ) :        
+        
+        if len( self.carnatic_map ) :
+            r = self.carnatic_map[ res ]
+        else :
+            r = res;
+            
+        if self.evaluate :
+            self.res += r
+        
+        return 'r=%s' % r
+            
     def done( self ) :
 
-        score = lessons.distance( self.content, self.res );
-        return ','.join( [ 'r=-',
-                           's=%.2f' % ( score ) ] )
+        if self.evaluate :
+            score = lessons.distance( self.lesson, self.res );
+            return ','.join( [ 'r=-',
+                            's=%.2f' % ( score ) ] )
+        else :
+            return 'r=-'

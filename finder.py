@@ -156,7 +156,7 @@ class Note( Finder_Base ) :
                   oct_wt_ratio, # rel. weight of notes in higher octaves
                   n_octaves,    # num octaves to analyze
                   use_fft,       # fft instead of dct
-                  carnatic_tonic ) :
+    ) :
 
         Finder_Base.__init__( self,
                               pitch_start = pitch_start,
@@ -166,15 +166,6 @@ class Note( Finder_Base ) :
                               n_octaves    = n_octaves,
                               use_fft      = use_fft )
         
-        notes             = sound.notes()
-        self.carnatic_map = dict()
-
-        if carnatic_tonic != '' :
-            idx = notes.index( carnatic_tonic )
-            if idx > 0 and idx < len( notes ):
-                notes = notes[ idx : ] + notes[ 0 : idx ]
-            self.carnatic_map = dict( zip( notes, sound.swaras() ) )
-  
     def find_from_framp( self, framp ) :
    
         framp   = self.filter_amps( framp )
@@ -188,10 +179,7 @@ class Note( Finder_Base ) :
         # more than 2 notes detected, classify as noise
             return ( '-', res[ max_idx ] , pcs )
 
-        if len( self.carnatic_map ) :
-            return( self.carnatic_map[ self.__keys__[ max_idx ] ], res[ max_idx ], pcs )
-        else :
-            return ( self.__keys__[ max_idx ], res[ max_idx ], pcs )
+        return ( self.__keys__[ max_idx ], res[ max_idx ], pcs )
 
 class Chord( Finder_Base ) :
 

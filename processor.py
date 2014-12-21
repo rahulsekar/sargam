@@ -19,9 +19,9 @@ class Processor :
         self.times      = []
         self.finder     = factory.get_finder( self.config )
         self.controller = factory.get_controller(
-            self.config[ 'lesson' ],
-            self.config[ 'evaluate' ],
-            self.config[ 'carnatic_tonic' ] )
+            lesson = self.config[ 'lesson' ],
+            carnatic_tonic = self.config[ 'carnatic_tonic' ],
+            evaluate = self.config[ 'evaluate' ] )
 
         if 'rate' in self.config :
             self.windowSize    = self.config[ 'rate' ] / self.config[ 'freq_base' ]
@@ -61,11 +61,11 @@ class Processor :
                     self.done()
                 return
 
-            if key in [ 'debug', 'plot', 'evaluate', 'chords' ] :
+            if key in [ 'debug', 'plot', 'chords' ] :
                 args[ key ] = True
             elif key in [ 'lesson', 'carnatic_tonic', 'dtype' ] : 
                 args[ key ] = value # TODO: check value!
-            elif 'rate' == key :
+            elif key in [ 'rate', 'evaluate' ] :
                 args[ key ] = int( value )
             else :
                 raise NameError( 'unknown message key: %s' % key )
