@@ -1,0 +1,31 @@
+{
+    "lessons" : [
+	{ "name" : "sarali0",
+	  "thala" : 5,
+	  "swara" : "SPSPS" },
+	
+	{ "name" : "sarali1",
+	  "thala" : 8,
+	  "swara" : "SrGmPdNSSNdPmGrS" },
+	
+	{ "name" : "sarali2",
+	  "thala" : 8,
+	  "swara" : "SrSrSrGmSrGmPdNSSNSNSNdPSNdPmGrS" },
+	
+	{ "name" : "sarali3",
+	  "thala" : 8,
+	  "swara" : "SrGSrGSrSrGmPdNSSNdSNdSNSNdPmGrS" },
+	
+	{ "name" : "sarali4",
+	  "thala" : 8,
+	  "swara" : "SrGmSrGmSrGmPdNSSNdPSNdPSNdPmGrS" },
+	
+	{ "name" : "sarali5",
+	  "thala" : 8,
+	  "swara" : "SrGmP.SrSrGmPdNSSNdPm.SNSNdPmGrS" },
+	
+	{ "name" : "lambodhara",
+	  "thala" : 6,
+	  "swara" : "mPdSSrrSdPmPrmPdmPdPmGrSSrmmGrSrGrS.rmPdmPdPmGrS" }
+    ]
+}
