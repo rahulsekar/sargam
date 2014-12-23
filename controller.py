@@ -13,29 +13,25 @@ class Controller :
         
         self.carnatic_map = dict()
 
-        if self.carnatic_tonic != '' :
+        if self.tonic != '' :
             notes = sound.notes()
-            idx   = notes.index( self.carnatic_tonic )
+            idx   = notes.index( self.tonic )
             if idx > 0 and idx < len( notes ):
                 notes = notes[ idx : ] + notes[ 0 : idx ]
             self.carnatic_map = dict( zip( notes, sound.swaras() ) )
             self.carnatic_map[ '-' ] = '-';
             
-        if self.lesson_name in lessons.get_lessons() :
-            self.lesson = lessons.get_lessons()[ self.lesson_name ]
-        else :
-            self.lesson = 'N/A'
-            
-        if '' == self.carnatic_tonic and self.lesson != 'N/A' :
-            raise NameError( 'Lesson %s needs carnatic_tonic' % lesson_name )
-        return ','.join( [ 'l=%s' % self.lesson, 'e' ] )
+        if '' == self.tonic and '' != self.lesson :
+            return 'm=Tonic needed for %s' % self.lesson
 
-    def __init__( self, lesson_name, carnatic_tonic, evaluate ) :
+        return 'e' # server ready
+
+    def __init__( self, tonic, lesson, evaluate ) :
         
-        self.carnatic_tonic = carnatic_tonic
-        self.evaluate       = evaluate
-        self.lesson_name    = lesson_name
-        self.res            = ''
+        self.tonic    = tonic
+        self.evaluate = evaluate
+        self.lesson   = lesson
+        self.res      = ''
 
     def process_tone( self, res, pcs, val ) :        
         
@@ -43,7 +39,7 @@ class Controller :
             r = self.carnatic_map[ res ]
         else :
             r = res;
-            
+
         if self.evaluate :
             self.res += r
         
@@ -53,7 +49,6 @@ class Controller :
 
         if self.evaluate :
             score = lessons.distance( self.lesson, self.res );
-            return ','.join( [ 'r=-',
-                            's=%.2f' % ( score ) ] )
+            return ','.join( [ 's=%.2f' % ( score ) ] )
         else :
-            return 'r=-'
+            return ''

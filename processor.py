@@ -18,10 +18,7 @@ class Processor :
         self.plot       = self.config[ 'plot' ]
         self.times      = []
         self.finder     = factory.get_finder( self.config )
-        self.controller = factory.get_controller(
-            lesson = self.config[ 'lesson' ],
-            carnatic_tonic = self.config[ 'carnatic_tonic' ],
-            evaluate = self.config[ 'evaluate' ] )
+        self.controller = factory.get_controller( self.config )
 
         if 'rate' in self.config :
             self.windowSize    = self.config[ 'rate' ] / self.config[ 'freq_base' ]
@@ -63,7 +60,7 @@ class Processor :
 
             if key in [ 'debug', 'plot', 'chords' ] :
                 args[ key ] = True
-            elif key in [ 'lesson', 'carnatic_tonic', 'dtype' ] : 
+            elif key in [ 'lesson', 'tonic', 'dtype' ] : 
                 args[ key ] = value # TODO: check value!
             elif key in [ 'rate', 'evaluate' ] :
                 args[ key ] = int( value )

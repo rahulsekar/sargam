@@ -50,7 +50,7 @@ def get_cmd_args() :
                          action = 'store_true' )
     parser.add_argument( '--use_fft', help = 'Use fft instead of dct',
                          action = 'store_true' )
-    parser.add_argument( '--carnatic_tonic',
+    parser.add_argument( '--tonic',
                          help = 'Carnatic tonic (shadhjam)',
                          default = '', type = str )
     parser.add_argument( '--lesson', help = 'Lesson Name',
@@ -100,14 +100,17 @@ def get_source( mode, infile, micrate ) :
 
     return ret
 
-def get_controller( lesson, carnatic_tonic, evaluate ) :
+def get_controller( args ) :
 
-    if lesson == '' :
-        if evaluate :
+    l = args[ 'lesson' ]
+    t = args[ 'tonic' ]
+    e = args[ 'evaluate' ]
+    
+    if '' == l :
+        if e :
             raise NameError( 'No --lesson to evaluate on.' )
-        ret = controller.Controller( '', carnatic_tonic, False )
+        ret = controller.Controller( t, '', False )
     else :
-        ret = controller.Controller( lesson, carnatic_tonic, evaluate )
+        ret = controller.Controller( t, l, e )
         
     return ret
-

@@ -1,15 +1,14 @@
 import numpy as np
 import scipy.stats as stats
+import json
 
-def get_lessons() :
+def get_lesson( lesson_name ) :
 
+    res = json.loads( open( 'www/lessons.json' ).read() )
+    return res[ lesson_name ].swara
+
+'''
     lessons = {
-        'sarali0'  : 'SPSPS',
-        'sarali1'  : 'SrGmPdNSSNdPmGrS',
-        'sarali2'  : 'SrSrSrGmSrGmPdNSSNSNSNdPSNdPmGrS',
-        'sarali3'  : 'SrGSrGSrSrGmPdNSSNdSNdSNSNdPmGrS',
-        'sarali4'  : 'SrGmSrGmSrGmPdNSSNdPSNdPSNdPmGrS',
-        'sarali5'  : 'SrGmPPSrSrGmPdNSSNdPmmSNSNdPmGrS',
         'sarali6'  : 'SrGmPdSrSrGmPdNSSNdPmGSNSNdPmGrS',
         'sarali7'  : 'SrGmPdNNSrGmPdNSSNdPmGrrSNdPmGrS',
         'sarali8'  : 'SrGmPmGrSrGmPdNSSNdPmPdNSNdPmGrS',
@@ -21,10 +20,7 @@ def get_lessons() :
         'datu1'    : 'SSmmrrGGSSrrGGmmrrPPGGmmrrGGmmPPGGddmmPPGGmmPPddmmNNPPddmmPPddNNPPSSddNNPPddNNSSSSPPNNddSSNNddPPNNmmddPPNNddPPmmddGGPPmmddPPmmGGPPrrmmGGPPmmGGrrmmSSGGrrmmGGrrSS',
         'datu2'    : 'SmGmrGSrSGrGSrGmrPmPGmrGrmGmrGmPGdPdmPGmGPmPGmPdmNdNPdmPmdPdmPdNPSNSdNPdPNdNPdNSSPdPNdSNSdNdSNdPNmPmdPNdNPdPNdPmdGmGPmdPdmPmdPmGPrGrmGPmPGmGPmGrmSrSGrmGmrGrmGrS',
         'datu3'    : '',
-        'lambodhara' : 'mPdSSrrSdPmPrmPdmPdPmGrSSrmmGrSrGrSrmPdmPdPmGrS',
-    }
-
-    return lessons
+'''
 
 def distance( lesson, results ) :
 
