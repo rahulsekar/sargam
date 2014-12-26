@@ -4,14 +4,12 @@ import json
 
 def get_lesson( lesson_name ) :
 
-    res = json.loads( open( 'www/lessons.json' ).read() )
-    return res[ lesson_name ].swara
+    res = json.load( open( 'www/lessons.json' ) )[ 'lessons' ]
+    idx = [ l[ 'name' ] for l in res ].index( lesson_name )
+    return str( res[ idx ][ 'swara' ] )
 
 '''
     lessons = {
-        'sarali6'  : 'SrGmPdSrSrGmPdNSSNdPmGSNSNdPmGrS',
-        'sarali7'  : 'SrGmPdNNSrGmPdNSSNdPmGrrSNdPmGrS',
-        'sarali8'  : 'SrGmPmGrSrGmPdNSSNdPmPdNSNdPmGrS',
         'sarali9'  : 'SrGmPmdPSrGmPdNSSNdPmPGmSNdPmGrS',
         'sarali10' : 'SrGmPPGmPPPPPPPPGmPdNdPmGmPGmGrS',
         'sarali11' : 'SSNdNNdPddPmPPPPGmPdNdPmGmPGmGrS',

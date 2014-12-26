@@ -24,8 +24,20 @@
 	  "thala" : 8,
 	  "swara" : "SrGmP.SrSrGmPdNSSNdPm.SNSNdPmGrS" },
 	
+        { "name" : "sarali6",
+	  "thala" : 8,
+	  "swara" : "SrGmPdSrSrGmPdNSSNdPmGSNSNdPmGrS" },
+	
+        { "name" : "sarali7",
+	  "thala" : 8,
+	  "swara" : "SrGmPdNNSrGmPdNSSNdPmGrrSNdPmGrS" },
+	
+        { "name" : "sarali8",
+	  "thala" : 8,
+	  "swara" : "SrGmPmGrSrGmPdNSSNdPmPdNSNdPmGrS" },
+
 	{ "name" : "lambodhara",
 	  "thala" : 6,
-	  "swara" : "mPdSSrrSdPmPrmPdmPdPmGrSSrmmGrSrGrS.rmPdmPdPmGrS" }
+	  "swara" : "mPdSSrrSdPmPrmPdmPdPmGrSSrm.GrSrGrS.rmPdmPdPmGrS" }
     ]
 }

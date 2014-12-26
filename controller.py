@@ -48,7 +48,9 @@ class Controller :
     def done( self ) :
 
         if self.evaluate :
-            score = lessons.distance( self.lesson, self.res );
+            score = lessons.distance(
+                lessons.get_lesson( self.lesson ),
+                self.res );
             return ','.join( [ 's=%.2f' % ( score ) ] )
         else :
             return ''
