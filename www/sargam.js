@@ -1,8 +1,12 @@
 var isRecording = false, isPractising = false;
-var ws          = null;
+
+var wsh = new WebSocket( 'ws://' + window.location.href.split( '/' )[2] + '/ws' );
+wsh.onmessage = onWsMessage;
+var ap = new OpusEncoderProcessor( wsh );
+var mh = new MediaHandler( ap );
 
 var current_lesson = null, lessonidx = null;
-var  isFreestyle = true, lessons = null;
+var isFreestyle = true, lessons = null;
 var interval = null, isUntimed = true;
 var firstSpeed = 2000; // msec
 
@@ -21,26 +25,39 @@ function stopRecord()
 
 function sendSettings()
 {
-    var message = 'rate=' + String( MediaHandler.context.sampleRate / AudioHandler.downSample );
-    var keys    = [ 'tonic', 'lesson' ];
-    
-    for( var i = 0; i < keys.length; ++i )
-	message += ',' + keys[ i ] + '=' + UI.getSettings( keys[ i ] );
+    var r = 'rate=' + String( mh.context.sampleRate / ap.downSample );
+    var t = 'tonic=' + UI.getSettings( 'tonic' );
+    var l = 'lesson=' + UI.getSettings( 'lesson' );
+    var e = 'evaluate=';
 
     if( UI.getSettings( 'speed' ) != '' )
-	message += ',evaluate=1';
+	e += '1';
     else
-	message += ',evaluate=0';
+	e += '0';
+
+    var msgArr = [ r, t, l, e ]
+    if( UI.getSettings( 'encode' ) == 1 )
+    {
+	var o = 'op_rate=' + String( ap.opusRate );
+	var f = 'op_frame_dur=' + String( ap.opusFrameDur );
+	msgArr.push( o )
+	msgArr.push( f );
+	encode = true;
+    }
+    else
+	encode = false;
+
+    var message = 'msg:' + msgArr.join( ',' );
 
     console.log( message );
-    WSHandler.send( message );
+    wsh.send( message );
 }
 
 function loadLessons()
 {
     var xmlhttp = null;
     xmlhttp = new XMLHttpRequest();
-    xmlhttp.open( "GET", "lessons.json", false );
+    xmlhttp.open( 'GET', 'lessons.json', false );
     xmlhttp.send();
     lessons = JSON.parse( xmlhttp.responseText ).lessons;
     UI.setLessonOptions( lessons );
@@ -74,8 +91,8 @@ function updateLesson()
     {
 	exp = lesson[ lessonidx ]
 	yet = lesson.substring( lessonidx + 1 );
-	lessonHTML += "<font color=\"red\">" + exp + "</font>";
-	lessonHTML += "<font color=\"black\">" + yet + "</font>";
+	lessonHTML += '<font color="red">' + exp + '</font>';
+	lessonHTML += '<font color="black">' + yet + "</font>";
     }*/
 }
 
@@ -86,9 +103,9 @@ function processResult( res )
     else 
     {
 	if( current_lesson[ lessonidx ] == res )
-	    resHTML = "<font color=\"green\">" + res + "</font>";
+	    resHTML = '<font color="green">' + res + '</font>';
 	else
-	    resHTML = "<font color=\"red\">" + res + "</font>";
+	    resHTML = '<font color="red">' + res + '</font>';
 	
 	UI.updateResult( resHTML );
 	
@@ -110,16 +127,16 @@ function serverReady()
 
         switch( UI.getSettings( 'speed' ) )
 	{
-	case "1":
+	case '1':
 	    interval = setInterval( updateLesson, firstSpeed )
 	    break;
-	case "2" :
+	case '2' :
 	    interval = setInterval( updateLesson, firstSpeed / 2.0 );
 	    break;
-	case "3" :
+	case '3' :
 	    interval = setInterval( updateLesson, firstSpeed / 4.0 );
 	    break;
-	case "" :
+	case '' :
 	    isUntimed = true;
 	}
     }
@@ -133,14 +150,12 @@ function onWsMessage( evt )
     for( var i = 0; i < parts.length; ++i )
     {
 	var keyval = parts[ i ].split( '=' )
-	var key    = keyval[0]
+	var key = keyval[0]
 	switch( key )
 	{
 	case 'r' : // result
 	    processResult( keyval[1] );
 	    break;
-	case 'b' : // bufferRate
-	    bufferSize = context.sampleRate / parseInt( keyval[1] )
 	case 's' : // score
 	    UI.setScore( keyval[1] );
 	    break;
@@ -150,6 +165,10 @@ function onWsMessage( evt )
 	case 'e' : // server ready
 	    serverReady();
 	    break;
+	case '' : // nothing to do
+	    break;
+	default :
+	    alert( 'Unknown message key from server: ' + key );
 	}
     }
 }
@@ -169,11 +188,11 @@ function stopPractice()
     stopRecord();
     if( !isUntimed )
 	clearInterval( interval );
-    WSHandler.send( 'done' );
+    wsh.send( 'msg:done' );
     isPractising = false;
-    console.log( "ended practice" );
-    UI.showMessage( "Stopped" );
-    document.getElementById( "practice" ).innerHTML = "Start";
+    console.log( 'ended practice' );
+    UI.showMessage( 'Stopped' );
+    document.getElementById( 'practice' ).innerHTML = 'Start';
     UI.enableSettings();
 }
 
@@ -185,8 +204,5 @@ function togglePractice()
 	startPractice();
 }
 
-WSHandler.onmessage = onWsMessage;
-MediaHandler.init();
-AudioHandler.init();
 loadLessons();
 UI.clean();

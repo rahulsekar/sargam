@@ -106,7 +106,6 @@ class WebSocket( tornado.websocket.WebSocketHandler ):
     
     def open( self ):
         print( 'new connection' )
-        self.write_message( '' )
       
     def initialize( self, subscriber ) :
         
@@ -114,8 +113,8 @@ class WebSocket( tornado.websocket.WebSocketHandler ):
         self.subscriber.connect( self ) #output!
 
     def on_message( self, data ) :
-        if len( data ) < 1000 :
-            self.subscriber.process_message( data )
+        if data.startswith( 'msg:' ):
+            self.subscriber.process_message( data[ 4 : ] )
         else : 
            self.subscriber.consume_audio( data, time.time() )
 

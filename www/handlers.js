@@ -1,66 +1,78 @@
-var WSHandler = new WebSocket( "ws://" + window.location.href.split( '/' )[2] + "/ws" );
+var OpusEncoderProcessor = function( wsh )
+{
+    this.wsh = wsh;
+    this.bufferSize = 4096; // for webaudio script processor
+    this.downSample = 2;
+    this.opusFrameDur = 60; // msec
+    this.opusRate = 48000 / this.downSample;
+    this.i16arr = new Int16Array( this.bufferSize / this.downSample );
+    this.f32arr = new Float32Array( this.bufferSize / this.downSample );
+    this.opusEncoder = new OpusEncoder( this.opusRate, 1, 2049, this.opusFrameDur );
+}
 
-var AudioHandler = {
-
-    bufferSize : 4096,
-    downSample : 2,
-    int16Buffer : null,
-    
-    onAudioProcess : function( e )
+OpusEncoderProcessor.prototype.onAudioProcess = function( e )
+{
+    if( isRecording )
     {
-	if( isRecording )
+	var data = e.inputBuffer.getChannelData( 0 )
+	var i = 0, ds = this.downSample;
+	
+	if( encode )
 	{
-	    var data = e.inputBuffer.getChannelData( 0 );
-	    var i = 0, ds = AudioHandler.downSample;
 	    for( var idx = 0; idx < data.length; idx += ds )
-		AudioHandler.int16Buffer[ i++ ] = data[ idx ] * 0xFFFF
-	    WSHandler.send( AudioHandler.int16Buffer );
+		this.f32arr[ i++ ] = data[ idx ];
+
+	    var res = this.opusEncoder.encode_float( this.f32arr );
+
+	    for( var idx = 0; idx < res.length; ++idx )
+		this.wsh.send( res[ idx ] );
 	}
-    },
-    
-    init : function()
-    {
-	this.int16Buffer = new Int16Array( this.bufferSize / this.downSample );
+	else
+	{
+	    for( var idx = 0; idx < data.length; idx += ds )
+		this.i16arr[ i++ ] = data[ idx ] * 0xFFFF; // int16
+
+	    this.wsh.send( this.i16arr );
+	}
     }
 }
 
-var MediaHandler = {
+var MediaHandler = function( audioProcessor )
+{
+    var context = new (window.AudioContext||window.webkitAudioContext)();
+    if( !context.createScriptProcessor )
+	context.createScriptProcessor = context.createJavaScriptNode;
 
-    context : new (window.AudioContext||window.webkitAudioContext)(),
-    micSource : null,
-    processor : null,
-    userMediaConfig : {
+    if( context.sampleRate < 44000 || context.SampleRate > 50000 )
+    {
+	alert( "Unsupported sample rate: " + String( context.sampleRate ) );
+	return;
+    };
+
+    //initialize mic
+    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    
+    this.context = context;
+    this.audioProcessor = audioProcessor;
+    var userMediaConfig = {
 	"audio": {
-	    "mandatory": { 
-		"googEchoCancellation": "false",
-		"googAutoGainControl": "false",
-		"googNoiseSuppression": "false",
-		"googHighpassFilter": "false"
-	    },
+	    "mandatory": {},
 	    "optional": []
 	}
-    },
+    }
     
-    callback : function( stream )
-    {
-	console.log( 'starting callback' );
-	MediaHandler.micSource = MediaHandler.context.createMediaStreamSource( stream );
-	MediaHandler.processor = MediaHandler.context.createScriptProcessor( AudioHandler.bufferSize, 1, 1 );
-	MediaHandler.processor.onaudioprocess = AudioHandler.onAudioProcess;
-	MediaHandler.micSource.connect( MediaHandler.processor );
-	MediaHandler.processor.connect( MediaHandler.context.destination );
-	console.log( 'ending callback' );
-    },
-    
-    error : function( err ) { alert( "Problem" ); },
-    
-    init : function()
-    {
-	if( !this.context.createScriptProcessor )
-	    this.context.createScriptProcessor = this.context.createJavaScriptNode;
-	//initialize mic
-	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-	
-	navigator.getUserMedia( this.userMediaConfig, this.callback, this.error );
-    },	
+    navigator.getUserMedia( userMediaConfig, this.callback.bind( this ), this.error );
 }
+
+MediaHandler.prototype.callback = function( stream )
+{
+    console.log( 'starting callback' );
+    this.micSource = this.context.createMediaStreamSource( stream );
+    this.processor = this.context.createScriptProcessor( this.audioProcessor.bufferSize, 1, 1 );
+    this.processor.onaudioprocess = this.audioProcessor.onAudioProcess.bind( this.audioProcessor );
+    this.micSource.connect( this.processor );
+    this.processor.connect( this.context.destination );
+    console.log( 'ending callback' );
+}
+
+MediaHandler.prototype.error = function( err ) { alert( "Problem" ); }
