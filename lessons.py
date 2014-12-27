@@ -2,9 +2,15 @@ import numpy as np
 import scipy.stats as stats
 import json
 
+def load_lessons() :
+    return json.load( open( 'www/lessons.json' ) )[ 'lessons' ]
+
+def get_lesson_names() :
+    return [ l[ 'name' ] for l in load_lessons() ]
+    
 def get_lesson( lesson_name ) :
 
-    res = json.load( open( 'www/lessons.json' ) )[ 'lessons' ]
+    res = load_lessons()
     idx = [ l[ 'name' ] for l in res ].index( lesson_name )
     return str( res[ idx ][ 'swara' ] )
 

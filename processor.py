@@ -5,13 +5,14 @@ import factory
 import destination
 from opus.decoder import Decoder as OpusDecoder
 #import wave
+import gc
 
 class Processor :
-    
+
     def __init__( self ) :
         
         self.config = factory.get_cmd_args()
-        self.update()
+        self.update( self.config )
 
     def update_dtype( self, dtype_str ) :
         
@@ -42,25 +43,25 @@ class Processor :
         self.window_size = sampling_rate / freq_base
         self.window_size_by_2 = int( self.window_size / 2.0 ) + 1
 
-    def update( self ) :
+    def update( self, params ) :
 
         self.inProgress = True
         self.is_encoded = False
-        self.debug      = self.config[ 'debug' ]
-        self.plot       = self.config[ 'plot' ]
+        self.debug      = params[ 'debug' ]
+        self.plot       = params[ 'plot' ]
         self.times      = []
-        self.finder     = factory.get_finder( self.config )
-        self.controller = factory.get_controller( self.config )
+        self.finder     = factory.get_finder( params )
+        self.controller = factory.get_controller( params )
 
-        if 'rate' in self.config :
-            self.update_rate( self.config[ 'rate' ], self.config[ 'freq_base' ] )
+        if 'rate' in params :
+            self.update_rate( params[ 'rate' ], params[ 'freq_base' ] )
 
-        self.update_dtype( self.config[ 'dtype' ] )
+        self.update_dtype( params[ 'dtype' ] )
 
-        if 'op_rate' in self.config :
-            self.update_decoder( self.config[ 'op_rate' ],
-                                 self.config[ 'op_frame_dur' ],
-                                 self.config[ 'rate' ] )
+        if 'op_rate' in params :
+            self.update_decoder( params[ 'op_rate' ],
+                                 params[ 'op_frame_dur' ],
+                                 params[ 'rate' ] )
 
         self.buffer = np.array( [], dtype = self.dtype )
 
@@ -86,7 +87,7 @@ class Processor :
             key = subparts[ 0 ]
             if len( subparts ) == 2 :
                 value = subparts[ 1 ]
-            
+
             if 'done' == key :
                 if self.inProgress :
                     self.done()
@@ -94,15 +95,15 @@ class Processor :
 
             if key in [ 'debug', 'plot', 'chords' ] :
                 args[ key ] = True
-            elif key in keys_str : 
+            elif key in keys_str :
                 args[ key ] = value # TODO: check value!
             elif key in keys_int :
                 args[ key ] = int( value )
             else :
                 raise NameError( 'unknown message key: %s' % key )
         
-        self.config.update( args )
-        self.update()
+        params = dict( self.config, **args )
+        self.update( params )
         
         self.subscriber.write_message( self.controller.initialize() )
 
@@ -112,7 +113,8 @@ class Processor :
             pcm = self.decoder.decode( data, self.op_frame_size, False )
             self.consume_audio_np_array(
                 np.frombuffer( pcm, dtype = np.int16 ), t )
-#            self.wave_write.writeframes( pcm )
+            #self.wave_write.writeframes( pcm )
+            gc.collect() # force garbage collector
         else :
             self.consume_audio_np_array( 
                 np.frombuffer( data, dtype = self.dtype ), t )
