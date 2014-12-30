@@ -1,11 +1,24 @@
 <html>
   <style>
-    h1, h2 { display: inline-block; }
-    .settings{ width: 50%; }
-    .lessonPane { float: left; }
-    .resultPane { margin-left: 10%; float: left; }
+    .settings { width : 50%; }
+    .message { font-size : 200% }
+    .sheetPane {
+    display : table;
+    width : 100% ;
+    }
+    .sheetRow { display : table-row; width : 100%; }
+    .square { 
+    float : left;
+    width : 10%;
+    height : 10%;
+    margin : 2px 2px 2px 2px;
+    border : 1px solid;
+    background-color : yellow;
+    text-align : center;
+    display : table-cell;
+    }
   </style>
-
+ 
   <title>Virtual Music Academy</title>
   <body>
     <h1>Welcome to Virtual Music Academy</h1><br>
@@ -26,10 +39,10 @@
 	  <option>A#</option>
 	  <option>B</option>
 	</select>
-	Lesson <select name="lesson" id="lessonSelect" onchange="changeLesson( this.value )">
+	Lesson <select name="lesson" id="lessonSelect" onchange="onSettingsChange()">
 	  <option></option>
 	</select>
-	Speed <select name="speed">
+	Speed <select name="speed" onchange= "onSettingsChange()">
 	  <option></option>
 	  <option>1</option>
 	  <option>2</option>
@@ -40,21 +53,12 @@
 	  <option>0</option>
 	</select>
       </form>
-      <button onclick="togglePractice()" id="practice">Start</button>
     </div>
-  
-    <h2 id="message">Practice makes perfect!</h2><br>
-
-    <div class="lessonPane">
-      <h2>Lesson:  </h2><h2 id="lessonName">N/A</h2><br>
-      <table id="lessonSheet"></table>
-    </div>
-    
-    <div class="resultPane">
-      <h2>Score:  </h2><h2 id="score">N/A</h2><br>
-      <table id="resultSheet"></table><br>
-    </div>
-
+    <button onclick="togglePractice()" id="practice">Start</button>
+    <br><br>
+    <div class="message" id="message">Practice makes perfect!</div>
+    <br><br>
+    <div id="lower_pane"></div>
   </body>
   <script src=ui.js></script>
   <script src=libopus.js></script>

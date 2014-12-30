@@ -7,23 +7,23 @@ var mh = new MediaHandler( ap );
 
 var current_lesson = null, lessonidx = null;
 var isFreestyle = true, lessons = null;
-var interval = null, isUntimed = true;
+var interval = null, isTimedLesson = null;
 var firstSpeed = 2000; // msec
 
-function startRecord()
+startRecord = function()
 {
     isRecording = true;
     UI.showMessage( 'In Progress' );
     console.log( 'started recording' );
 }
 
-function stopRecord()
+stopRecord = function()
 {
     isRecording  = false;
     console.log( 'ended recording' );    
 }
 
-function sendSettings()
+sendSettings = function()
 {
     var r = 'rate=' + String( mh.context.sampleRate / ap.downSample );
     var t = 'tonic=' + UI.getSettings( 'tonic' );
@@ -53,7 +53,7 @@ function sendSettings()
     wsh.send( message );
 }
 
-function loadLessons()
+loadLessons = function()
 {
     var xmlhttp = null;
     xmlhttp = new XMLHttpRequest();
@@ -63,43 +63,57 @@ function loadLessons()
     UI.setLessonOptions( lessons );
 }
 
-function changeLesson( lesson_name )
+onSettingsChange = function()
 {
-    UI.clean();
-    if( lesson_name.length && lessons.length )
+    var lesson_name = UI.getSettings( 'lesson' );
+    var timed = ( UI.getSettings( 'speed' ) > 0 );
+
+    if( lesson_name != '' )
+    {
 	for( var i = 0; i < lessons.length; ++i )
 	    if( lessons[i].name == lesson_name )
+	{
+	    UI.lower_pane = new lessonPane( lessons[i], timed );
+	    current_lesson = lessons[i].swara;
+	    isFreestyle = false;
+	    break;
+	}
+
+	if( i == lessons.length )
+	    alert( 'unknown lesson: ' + lesson_name );
+    }	
+    else
     {
-	current_lesson = lessons[i].swara;
-	UI.setLesson( lessons[i] );
+	UI.lower_pane = new freestylePane();
+	isFreestyle = true;
+	current_lesson = '';
     }
-}	
+
+    if( timed && isFreestyle == 0 )
+	isTimedLesson = true;
+    else
+	isTimedLesson = false;
+}
 
 function updateLesson()
 {
     lessonidx++;
     
-//    var done = current_lesson.substring( 0, lessonidx );
-//    var exp  = '', yet = '';
-    
     if( lessonidx == current_lesson.length )
     {
 	stopPractice();
+	UI.lower_pane.endLesson();
 	UI.showMessage( 'Lesson Completed!' );
+	
     }
-/*    else
-    {
-	exp = lesson[ lessonidx ]
-	yet = lesson.substring( lessonidx + 1 );
-	lessonHTML += '<font color="red">' + exp + '</font>';
-	lessonHTML += '<font color="black">' + yet + "</font>";
-    }*/
+    else
+        UI.lower_pane.updateLesson();
 }
 
 function processResult( res )
 {
     if( isFreestyle )
-	UI.updateResult( res );
+	UI.lower_pane.updateResult( res );
     else 
     {
 	if( current_lesson[ lessonidx ] == res )
@@ -107,39 +121,39 @@ function processResult( res )
 	else
 	    resHTML = '<font color="red">' + res + '</font>';
 	
-	UI.updateResult( resHTML );
+	UI.lower_pane.updateResult( resHTML );
 	
-	if( isUntimed && current_lesson[ lessonidx ] == res )
-	    UI.updateLesson();
+	if( !isTimedLesson && current_lesson[ lessonidx ] == res )
+	    updateLesson();
     }
 }
 
 function serverReady()
 {
-    isUntimed   = false;
-    isFreestyle = true;
-    
-    if( UI.getSettings( 'lesson' ) != '' )
-    {
-	lessonidx   = -1;
-	isFreestyle = false
-	updateLesson();
-
+    if( isTimedLesson )
         switch( UI.getSettings( 'speed' ) )
-	{
-	case '1':
-	    interval = setInterval( updateLesson, firstSpeed )
-	    break;
-	case '2' :
-	    interval = setInterval( updateLesson, firstSpeed / 2.0 );
-	    break;
-	case '3' :
-	    interval = setInterval( updateLesson, firstSpeed / 4.0 );
-	    break;
-	case '' :
-	    isUntimed = true;
-	}
+    {
+    case '1':
+	interval = setInterval( updateLesson, firstSpeed )
+	break;
+    case '2' :
+	interval = setInterval( updateLesson, firstSpeed / 2.0 );
+	break;
+    case '3' :
+	interval = setInterval( updateLesson, firstSpeed / 4.0 );
+	break;
+    case '' :
+	break;
+    default :
+	alert( 'unknown speed' );
     }
+
+    if( !isFreestyle ) 
+    {
+	UI.lower_pane.startLesson();
+	lessonidx = 0 ;
+    }
+
     startRecord();
 }
 
@@ -157,7 +171,7 @@ function onWsMessage( evt )
 	    processResult( keyval[1] );
 	    break;
 	case 's' : // score
-	    UI.setScore( keyval[1] );
+	    UI.lower_pane.setScore( keyval[1] );
 	    break;
 	case 'm' : // message
 	    UI.showMessage( keyval[1] );
@@ -177,6 +191,7 @@ function startPractice()
 {
     isPractising = true;
     UI.disableSettings();
+    onSettingsChange();
     sendSettings();
     UI.showMessage( 'Waiting for server' );
     document.getElementById( 'practice' ).innerHTML = 'Stop';
@@ -186,7 +201,7 @@ function startPractice()
 function stopPractice()
 {
     stopRecord();
-    if( !isUntimed )
+    if( isTimedLesson )
 	clearInterval( interval );
     wsh.send( 'msg:done' );
     isPractising = false;
@@ -205,4 +220,4 @@ function togglePractice()
 }
 
 loadLessons();
-UI.clean();
+
